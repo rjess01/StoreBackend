@@ -1,7 +1,6 @@
-import bson.objectid import ObjectId
 import pymongo
 import json
-import bson import ObjectId
+from bson import ObjectId
 
 # connecton string
 # mongo_url = "mongodb+srv://......"

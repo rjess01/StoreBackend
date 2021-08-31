@@ -1,5 +1,7 @@
 from flask import Flask, render_template, abort, request
 import json
+
+from pymongo import cursor, results
 from data import data
 from flask_cors import CORS
 from config import db, parse_json
@@ -107,16 +109,17 @@ def get_catagories():
 # get a product by its _id
 @app.route("/api/catalog/id/<id>")
 def get_product_by_id(id):
+    product = db.products.find_one({"_id": id})
+    if not product:
+        abort(404)
     """
     look in your data list
     for a dictionary with the _id equal to id param
      return it as a json or return an error if not found
     """
-    for item in data:
-        if(str(item["_id"]) == id):
-            return parse_json(item)
 
-    abort(404)
+    return parse_json(product)
+
     
 # /api/catalog/category/<catagory>
 # get all the products that belong to recived category
@@ -145,6 +148,42 @@ def populate_db():
     return "Data loded"
 
 
+
+
+
+
+
+@app.route("/api/orders", methods=["post"])
+def save_order():
+    order = request.get_json()
+    db.orders.insert_one(order)
+    return parse_json(order)
+
+#validate at least 1
+    prods = order["products"]
+    count = len(prods)
+    if(count < 1):
+        abort(400, "Error: orders without products are not allowed!")
+
+db.orders.insert_one(order)
+    return parse_json(order)
+
+    @app.route("/api/orders")
+    def get_orders():
+        cursor = db.orders.find({})
+        order = [order for order in cursor]
+        return parse_json(orders)
+
+
+
+
+
+
+@app.route("/api/orders")
+def get_orders():
+    cursor = db.orders.find({})
+    order = [order for order in cursor]
+    return parse_json(order)
 
 if __name__ == '__main__':
     app.run(debug=True)
